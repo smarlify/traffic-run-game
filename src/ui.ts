@@ -4,6 +4,12 @@ const buttonsElement = document.getElementById('buttons');
 const instructionsElement = document.getElementById('instructions');
 const resultsElement = document.getElementById('results');
 const pauseDialogElement = document.getElementById('pause-dialog');
+const playerGreetingElement = document.getElementById('player-greeting');
+const playerNameFormElement = document.getElementById('player-name-form');
+const playerNameInputElement = document.getElementById('player-name-input') as HTMLInputElement;
+const playerNameSubmitElement = document.getElementById('player-name-submit');
+const resetInstructionElement = document.getElementById('reset-instruction');
+const finalScoreElement = document.getElementById('final-score');
 
 // Create arrow buttons
 const upButton = document.createElement('button');
@@ -64,9 +70,13 @@ let onAccelerate = null;
 let onDecelerate = null;
 let onReset = null;
 let onStart = null;
+let onPlayerNameSubmit = null;
 
 function setScore(value) {
   if (scoreElement) scoreElement.innerText = value;
+}
+function setFinalScore(value: number) {
+  if (finalScoreElement) finalScoreElement.innerText = value.toString();
 }
 function showResults(show) {
   if (resultsElement) resultsElement.style.display = show ? 'flex' : 'none';
@@ -83,6 +93,28 @@ function showPauseDialog() {
 function hidePauseDialog() {
   if (pauseDialogElement) pauseDialogElement.style.display = 'none';
 }
+function showPlayerNamePrompt() {
+  if (playerGreetingElement) playerGreetingElement.style.display = 'none';
+  if (playerNameFormElement) playerNameFormElement.style.display = 'block';
+  if (resetInstructionElement) resetInstructionElement.style.display = 'none';
+  // Focus input after a short delay to ensure it's visible
+  setTimeout(() => {
+    if (playerNameInputElement) playerNameInputElement.focus();
+  }, 100);
+}
+function showPlayerGreeting(name: string) {
+  if (playerGreetingElement) {
+    playerGreetingElement.innerText = `Welcome back, ${name}!`;
+    playerGreetingElement.style.display = 'block';
+  }
+  if (playerNameFormElement) playerNameFormElement.style.display = 'none';
+  if (resetInstructionElement) resetInstructionElement.style.display = 'block';
+}
+function hidePlayerUI() {
+  if (playerGreetingElement) playerGreetingElement.style.display = 'none';
+  if (playerNameFormElement) playerNameFormElement.style.display = 'none';
+  if (resetInstructionElement) resetInstructionElement.style.display = 'block';
+}
 function setupUIHandlers({
   onAccelerateDown,
   onDecelerateDown,
@@ -90,11 +122,13 @@ function setupUIHandlers({
   onStartKey,
   onLeftKey,
   onRightKey,
+  onNameSubmit,
 }) {
   onAccelerate = onAccelerateDown;
   onDecelerate = onDecelerateDown;
   onReset = onResetKey;
   onStart = onStartKey;
+  onPlayerNameSubmit = onNameSubmit;
   if (upButton) {
     upButton.addEventListener('mousedown', () => {
       if (onStart) onStart();
@@ -167,10 +201,27 @@ function setupUIHandlers({
       if (onDecelerate) onDecelerate(false);
     }
   });
+
+  // Player name form handlers
+  if (playerNameSubmitElement) {
+    playerNameSubmitElement.addEventListener('click', () => {
+      if (playerNameInputElement && playerNameInputElement.value.trim()) {
+        if (onPlayerNameSubmit) onPlayerNameSubmit(playerNameInputElement.value.trim());
+      }
+    });
+  }
+  if (playerNameInputElement) {
+    playerNameInputElement.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && playerNameInputElement.value.trim()) {
+        if (onPlayerNameSubmit) onPlayerNameSubmit(playerNameInputElement.value.trim());
+      }
+    });
+  }
 }
 
 export {
   setScore,
+  setFinalScore,
   showResults,
   setInstructionsOpacity,
   setButtonsOpacity,
@@ -181,4 +232,7 @@ export {
   resultsElement,
   showPauseDialog,
   hidePauseDialog,
+  showPlayerNamePrompt,
+  showPlayerGreeting,
+  hidePlayerUI,
 };

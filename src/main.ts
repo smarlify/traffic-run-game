@@ -27,13 +27,18 @@ import {
 } from './track';
 import {
   setScore,
+  setFinalScore,
   showResults,
   setInstructionsOpacity,
   setButtonsOpacity,
   setupUIHandlers,
   showPauseDialog,
   hidePauseDialog,
+  showPlayerNamePrompt,
+  showPlayerGreeting,
+  hidePlayerUI,
 } from './ui';
+import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
@@ -57,6 +62,7 @@ const playerAngleInitial: number = Math.PI;
 let paused: boolean = false;
 let gameOver: boolean = false;
 let gameOverPending: boolean = false;
+let firstGameOver: boolean = true;
 
 // Timeout management
 let activeTimeouts: number[] = [];
@@ -99,10 +105,37 @@ function resumeGame(): void {
   }
 }
 
+function handleGameOver(): void {
+  gameOver = true;
+
+  // Update final score in dialog
+  setFinalScore(score);
+
+  // Check if player has a name stored
+  if (hasPlayerName()) {
+    const playerData = getPlayerData();
+    if (playerData) {
+      showPlayerGreeting(playerData.name);
+    }
+  } else if (firstGameOver) {
+    // First game over and no name - show prompt
+    showPlayerNamePrompt();
+    firstGameOver = false;
+  } else {
+    // Subsequent game overs without name
+    hidePlayerUI();
+  }
+}
+
+function handlePlayerNameSubmit(name: string): void {
+  setPlayerName(name);
+  showPlayerGreeting(name);
+}
+
 function reset(): void {
   // Clear all active timeouts to prevent state inconsistencies
   clearAllTimeouts();
-  
+
   playerAngleMoved = 0;
   score = 0;
   setScore('Press UP');
@@ -118,6 +151,7 @@ function reset(): void {
   });
   otherVehicles = [];
   showResults(false);
+  hidePlayerUI();
   lastTimestamp = undefined;
   // Place the player's car to the starting position
   movePlayerCar(0);
@@ -232,7 +266,12 @@ function animation(timestamp: number): void {
     playerAngleInitial,
     playerAngleMoved,
     otherVehicles,
-    showResults,
+    showResults: (show) => {
+      showResults(show);
+      if (show) {
+        handleGameOver();
+      }
+    },
     stopAnimationLoop,
     scene, // Pass scene for explosions
   });
@@ -278,6 +317,7 @@ setupUIHandlers({
   onRightKey: () => {
     if (!paused && !gameOver && !gameOverPending) playerLane = 'inner';
   },
+  onNameSubmit: handlePlayerNameSubmit,
 });
 
 // Initialize audio
