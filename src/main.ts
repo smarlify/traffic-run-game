@@ -37,12 +37,15 @@ import {
   showPlayerNamePrompt,
   showPlayerGreeting,
   hidePlayerUI,
+  clearPlayerNameInput,
+  showGameResult,
+  hideGameResult,
 } from './ui';
 import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
-import { initializeLeaderboard, saveLeaderboardScore } from './leaderboard';
+import { saveLeaderboardScore } from './leaderboard';
 
 // Game state
 let playerCar: THREE.Group | null = null;
@@ -108,9 +111,6 @@ function resumeGame(): void {
 function handleGameOver(): void {
   gameOver = true;
 
-  // Update final score in dialog
-  setFinalScore(score);
-
   // Save score to leaderboard
   const playerData = getPlayerData();
   if (playerData) {
@@ -127,21 +127,22 @@ function handleGameOver(): void {
   if (hasPlayerName()) {
     const playerData = getPlayerData();
     if (playerData) {
-      showPlayerGreeting(playerData.name);
+      showPlayerGreeting(playerData.name, score);
     }
   } else if (firstGameOver) {
-    // First game over and no name - show prompt
+    // First game over and no name - show prompt and game result
+    showGameResult('—', score);
     showPlayerNamePrompt();
     firstGameOver = false;
   } else {
-    // Subsequent game overs without name
+    // Subsequent game overs without name - show game result
+    showGameResult('—', score);
     hidePlayerUI();
   }
 }
 
 function handlePlayerNameSubmit(name: string): void {
   const playerData = setPlayerName(name);
-  showPlayerGreeting(name);
   // Save score to leaderboard with the new name
   saveLeaderboardScore({
     id: playerData.id,
@@ -150,6 +151,8 @@ function handlePlayerNameSubmit(name: string): void {
   }).catch(error => {
     console.error('Failed to save leaderboard score:', error);
   });
+  // Reset game immediately after saving
+  reset();
 }
 
 function reset(): void {
@@ -172,6 +175,8 @@ function reset(): void {
   otherVehicles = [];
   showResults(false);
   hidePlayerUI();
+  clearPlayerNameInput();
+  hideGameResult();
   lastTimestamp = undefined;
   // Place the player's car to the starting position
   movePlayerCar(0);
@@ -323,13 +328,12 @@ setupUIHandlers({
   },
   onResetKey: reset,
   onStartKey: () => {
-    if (gameOver || gameOverPending) {
-      reset();
-    } else if (paused) {
+    if (paused) {
       resumeGame();
-    } else {
+    } else if (!gameOver && !gameOverPending) {
       startGame();
     }
+    // When gameOver, arrow key does nothing - must use Retry button
   },
   onLeftKey: () => {
     if (!paused && !gameOver && !gameOverPending) playerLane = 'outer';
@@ -338,6 +342,7 @@ setupUIHandlers({
     if (!paused && !gameOver && !gameOverPending) playerLane = 'inner';
   },
   onNameSubmit: handlePlayerNameSubmit,
+  onRetryClick: reset,
 });
 
 // Initialize audio
@@ -371,9 +376,6 @@ window.addEventListener('visibilitychange', () => {
 
 // Game initialization
 async function init() {
-  // Initialize leaderboard
-  await initializeLeaderboard();
-
   // Pick a random color for the player
   playerCarColor = pickRandom(vehicleColors);
   playerCar = Car([playerCarColor]);

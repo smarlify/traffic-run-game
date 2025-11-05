@@ -5,7 +5,6 @@ import {
   addDoc,
   Timestamp,
 } from 'firebase/firestore';
-import { User } from 'firebase/auth';
 
 // Firebase config for leaderboard
 const firebaseConfig = {
@@ -20,14 +19,6 @@ const firebaseConfig = {
 // Create a dedicated named app to avoid conflicts
 const app = getApps().find(a => a.name === 'leaderboard') || initializeApp(firebaseConfig, 'leaderboard');
 const db = getFirestore(app);
-
-let currentUser: User | null = null;
-
-export async function initializeLeaderboard(): Promise<void> {
-  if (currentUser) {
-    console.debug('[leaderboard] Authenticated uid:', currentUser.uid);
-  }
-}
 
 export async function saveLeaderboardScore(
   entry: { id: string; name: string; score: number }
