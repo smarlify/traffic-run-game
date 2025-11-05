@@ -120,7 +120,6 @@ function showPlayerNamePrompt() {
 }
 function showPlayerGreeting(name: string, score: number) {
   if (playerGreetingElement) {
-    playerGreetingElement.innerText = `Welcome back, ${name}!`;
     playerGreetingElement.style.display = 'block';
   }
   if (playerNameFormElement) playerNameFormElement.style.display = 'none';

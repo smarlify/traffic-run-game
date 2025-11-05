@@ -326,7 +326,12 @@ setupUIHandlers({
   onDecelerateDown: val => {
     if (!paused && !gameOver && !gameOverPending) decelerate = val;
   },
-  onResetKey: reset,
+  onResetKey: () => {
+    // Only reset if not in game over state - must use Retry button during game over
+    if (!gameOver && !gameOverPending) {
+      reset();
+    }
+  },
   onStartKey: () => {
     if (paused) {
       resumeGame();
@@ -396,9 +401,8 @@ init();
 window.addEventListener('keydown', event => {
   if (event.key === ' ') {
     event.preventDefault();
-    if (gameOver) {
-      // During game over, space key should restart the game
-      reset();
+    // Game over: don't respond to any keys, only button clicks
+    if (gameOver || gameOverPending) {
       return;
     }
     if (paused) {
@@ -407,6 +411,9 @@ window.addEventListener('keydown', event => {
       pauseGame();
     }
   }
-  if (event.key === 'ArrowLeft') switchLane('left');
-  if (event.key === 'ArrowRight') switchLane('right');
+  // Arrow keys disabled during game over
+  if (!gameOver && !gameOverPending) {
+    if (event.key === 'ArrowLeft') switchLane('left');
+    if (event.key === 'ArrowRight') switchLane('right');
+  }
 });
