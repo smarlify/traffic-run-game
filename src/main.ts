@@ -37,13 +37,12 @@ import {
   showPlayerNamePrompt,
   showPlayerGreeting,
   hidePlayerUI,
-  showLeaderboard,
 } from './ui';
 import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
-import { initializeLeaderboard, saveLeaderboardScore, getTopScores } from './leaderboard';
+import { initializeLeaderboard, saveLeaderboardScore } from './leaderboard';
 
 // Game state
 let playerCar: THREE.Group | null = null;
@@ -124,15 +123,6 @@ function handleGameOver(): void {
     });
   }
 
-  // Fetch and display top scores
-  getTopScores(10)
-    .then(scores => {
-      showLeaderboard(scores);
-    })
-    .catch(error => {
-      console.error('Failed to fetch leaderboard:', error);
-    });
-
   // Check if player has a name stored
   if (hasPlayerName()) {
     const playerData = getPlayerData();
@@ -150,8 +140,16 @@ function handleGameOver(): void {
 }
 
 function handlePlayerNameSubmit(name: string): void {
-  setPlayerName(name);
+  const playerData = setPlayerName(name);
   showPlayerGreeting(name);
+  // Save score to leaderboard with the new name
+  saveLeaderboardScore({
+    id: playerData.id,
+    name: playerData.name,
+    score: score,
+  }).catch(error => {
+    console.error('Failed to save leaderboard score:', error);
+  });
 }
 
 function reset(): void {
@@ -174,11 +172,6 @@ function reset(): void {
   otherVehicles = [];
   showResults(false);
   hidePlayerUI();
-  // Clear leaderboard display
-  const leaderboardContainer = document.getElementById('leaderboard-container');
-  if (leaderboardContainer) {
-    leaderboardContainer.style.display = 'none';
-  }
   lastTimestamp = undefined;
   // Place the player's car to the starting position
   movePlayerCar(0);
