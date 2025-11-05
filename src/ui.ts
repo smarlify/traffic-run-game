@@ -10,6 +10,8 @@ const playerNameInputElement = document.getElementById('player-name-input') as H
 const playerNameSubmitElement = document.getElementById('player-name-submit');
 const resetInstructionElement = document.getElementById('reset-instruction');
 const finalScoreElement = document.getElementById('final-score');
+const leaderboardContainerElement = document.getElementById('leaderboard-container');
+const leaderboardListElement = document.getElementById('leaderboard-list');
 
 // Create arrow buttons
 const upButton = document.createElement('button');
@@ -114,6 +116,24 @@ function hidePlayerUI() {
   if (playerGreetingElement) playerGreetingElement.style.display = 'none';
   if (playerNameFormElement) playerNameFormElement.style.display = 'none';
   if (resetInstructionElement) resetInstructionElement.style.display = 'block';
+}
+
+function showLeaderboard(scores: Array<{ name: string; score: number }>) {
+  if (!leaderboardContainerElement || !leaderboardListElement) return;
+
+  // Clear existing entries
+  leaderboardListElement.innerHTML = '';
+
+  // Add top scores
+  scores.forEach((entry) => {
+    const li = document.createElement('li');
+    li.textContent = `${entry.name} - ${entry.score}`;
+    li.style.marginBottom = '8px';
+    leaderboardListElement.appendChild(li);
+  });
+
+  // Show leaderboard container
+  leaderboardContainerElement.style.display = 'block';
 }
 function setupUIHandlers({
   onAccelerateDown,
@@ -235,4 +255,5 @@ export {
   showPlayerNamePrompt,
   showPlayerGreeting,
   hidePlayerUI,
+  showLeaderboard,
 };

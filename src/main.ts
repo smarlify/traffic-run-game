@@ -37,12 +37,13 @@ import {
   showPlayerNamePrompt,
   showPlayerGreeting,
   hidePlayerUI,
+  showLeaderboard,
 } from './ui';
 import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
-import { GameState, VehicleType } from './types';
+import { initializeLeaderboard, saveLeaderboardScore, getTopScores } from './leaderboard';
 
 // Game state
 let playerCar: THREE.Group | null = null;
@@ -111,6 +112,27 @@ function handleGameOver(): void {
   // Update final score in dialog
   setFinalScore(score);
 
+  // Save score to leaderboard
+  const playerData = getPlayerData();
+  if (playerData) {
+    saveLeaderboardScore({
+      id: playerData.id,
+      name: playerData.name,
+      score: score,
+    }).catch(error => {
+      console.error('Failed to save leaderboard score:', error);
+    });
+  }
+
+  // Fetch and display top scores
+  getTopScores(10)
+    .then(scores => {
+      showLeaderboard(scores);
+    })
+    .catch(error => {
+      console.error('Failed to fetch leaderboard:', error);
+    });
+
   // Check if player has a name stored
   if (hasPlayerName()) {
     const playerData = getPlayerData();
@@ -152,6 +174,11 @@ function reset(): void {
   otherVehicles = [];
   showResults(false);
   hidePlayerUI();
+  // Clear leaderboard display
+  const leaderboardContainer = document.getElementById('leaderboard-container');
+  if (leaderboardContainer) {
+    leaderboardContainer.style.display = 'none';
+  }
   lastTimestamp = undefined;
   // Place the player's car to the starting position
   movePlayerCar(0);
@@ -350,7 +377,10 @@ window.addEventListener('visibilitychange', () => {
 });
 
 // Game initialization
-function init() {
+async function init() {
+  // Initialize leaderboard
+  await initializeLeaderboard();
+
   // Pick a random color for the player
   playerCarColor = pickRandom(vehicleColors);
   playerCar = Car([playerCarColor]);
