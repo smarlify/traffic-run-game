@@ -111,22 +111,18 @@ function resumeGame(): void {
 function handleGameOver(): void {
   gameOver = true;
 
-  // Save score to leaderboard
-  const playerData = getPlayerData();
-  if (playerData) {
-    saveLeaderboardScore({
-      id: playerData.id,
-      name: playerData.name,
-      score: score,
-    }).catch(error => {
-      console.error('Failed to save leaderboard score:', error);
-    });
-  }
-
   // Check if player has a name stored
   if (hasPlayerName()) {
+    // Only save score to leaderboard if player has a name
     const playerData = getPlayerData();
     if (playerData) {
+      saveLeaderboardScore({
+        id: playerData.id,
+        name: playerData.name,
+        score: score,
+      }).catch(error => {
+        console.error('Failed to save leaderboard score:', error);
+      });
       showPlayerGreeting(playerData.name, score);
     }
   } else if (firstGameOver) {
