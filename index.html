@@ -37,20 +37,20 @@
   <div class="content">
     <div id="score-frame">
       <h1>Game Over</h1>
-      <div id="player-name-container">
-        <p id="player-greeting" style="display: none;"></p>
-        <div id="player-name-form">
-          <p>Enter your name:</p>
-          <input type="text" id="player-name-input" maxlength="20" placeholder="Your name" />
-          <button id="player-name-submit">Save and Retry</button>
-        </div>
-      </div>
       <div id="game-result-info">
         <div id="player-info">Player: <span id="player-name-display">—</span></div>
         <div id="score-info">Score: <span id="final-score">0</span></div>
       </div>
       <div id="player-retry">
         <button id="retry-button">Retry</button>
+      </div>
+      <div id="sign-in-container">
+        <p id="sign-in-prompt">Want to save your score? Sign in with Google!</p>
+        <button id="sign-in-button">🎮 Sign In with Google</button>
+        <div id="user-info-display" style="display: none; text-align: center;">
+          <p id="signed-in-message">Signed in as</p>
+          <p id="signed-in-name" style="font-weight: bold; font-size: 1.2em;"></p>
+        </div>
       </div>
     </div>
   </div>

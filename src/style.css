@@ -78,56 +78,6 @@ a:visited {
   border-radius: 20px;
 }
 
-#player-name-input {
-  padding: 12px 16px;
-  font-size: 16px;
-  border: 2px solid white;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-radius: 8px;
-  margin: 15px 0;
-  width: 100%;
-  max-width: 300px;
-  box-sizing: border-box;
-  outline: none;
-  transition: background-color 0.3s;
-}
-
-#player-name-input:focus {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-#player-name-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-#player-name-form {
-  display: none;
-  text-align: center;
-}
-
-#player-name-submit {
-  display: block;
-  margin: 15px auto 0;
-  padding: 12px 32px;
-  font-size: 16px;
-  background-color: white;
-  color: black;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-
-#player-name-submit:hover {
-  transform: scale(1.05);
-}
-
-#player-name-submit:active {
-  transform: scale(0.95);
-  box-shadow: 1px 2px 0px 0px rgba(0, 0, 0, 0.75);
-}
 
 #player-retry {
   text-align: center;
@@ -251,6 +201,47 @@ a:visited {
   padding: 50px;
   border-radius: 20px;
   text-align: center;
+}
+
+#sign-in-container {
+  display: none;
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+}
+
+#sign-in-prompt {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 15px 0;
+  font-style: italic;
+}
+
+#sign-in-button {
+  display: block;
+  width: 100%;
+  padding: 12px 32px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 3px 5px 0px 0px rgba(0, 0, 0, 0.75);
+  box-sizing: border-box;
+}
+
+#sign-in-button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #357ae8, #2d9047);
+}
+
+#sign-in-button:active {
+  transform: scale(0.95);
+  box-shadow: 1px 2px 0px 0px rgba(0, 0, 0, 0.75);
 }
 
 @media (min-height: 425px) {

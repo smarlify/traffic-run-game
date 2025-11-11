@@ -34,18 +34,21 @@ import {
   setupUIHandlers,
   showPauseDialog,
   hidePauseDialog,
-  showPlayerNamePrompt,
   showPlayerGreeting,
   hidePlayerUI,
-  clearPlayerNameInput,
   showGameResult,
   hideGameResult,
+  showSignInContainer,
+  hideSignInContainer,
+  showUserInfo,
+  hideUserInfo,
 } from './ui';
 import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
 import { saveLeaderboardScore } from './leaderboard';
+import { signInWithGoogle, isUserLoggedIn, getCurrentUserName } from './auth';
 
 // Game state
 let playerCar: THREE.Group | null = null;
@@ -65,7 +68,6 @@ const playerAngleInitial: number = Math.PI;
 let paused: boolean = false;
 let gameOver: boolean = false;
 let gameOverPending: boolean = false;
-let firstGameOver: boolean = true;
 
 // Timeout management
 let activeTimeouts: number[] = [];
@@ -113,7 +115,7 @@ function handleGameOver(): void {
 
   // Check if player has a name stored
   if (hasPlayerName()) {
-    // Only save score to leaderboard if player has a name
+    // Player has a name stored, show greeting and save score
     const playerData = getPlayerData();
     if (playerData) {
       saveLeaderboardScore({
@@ -124,31 +126,29 @@ function handleGameOver(): void {
         console.error('Failed to save leaderboard score:', error);
       });
       showPlayerGreeting(playerData.name, score);
+      showUserInfo(playerData.name);
     }
-  } else if (firstGameOver) {
-    // First game over and no name - show prompt and game result
-    showGameResult('—', score);
-    showPlayerNamePrompt();
-    firstGameOver = false;
+  } else if (isUserLoggedIn()) {
+    // User is logged in with Google, auto-save their Google name
+    const googleName = getCurrentUserName();
+    if (googleName) {
+      const playerData = setPlayerName(googleName);
+      saveLeaderboardScore({
+        id: playerData.id,
+        name: playerData.name,
+        score: score,
+      }).catch(error => {
+        console.error('Failed to save leaderboard score:', error);
+      });
+      showPlayerGreeting(googleName, score);
+      showUserInfo(googleName);
+    }
   } else {
-    // Subsequent game overs without name - show game result
+    // No name and not logged in - show sign-in prompt
     showGameResult('—', score);
     hidePlayerUI();
+    showSignInContainer();
   }
-}
-
-function handlePlayerNameSubmit(name: string): void {
-  const playerData = setPlayerName(name);
-  // Save score to leaderboard with the new name
-  saveLeaderboardScore({
-    id: playerData.id,
-    name: playerData.name,
-    score: score,
-  }).catch(error => {
-    console.error('Failed to save leaderboard score:', error);
-  });
-  // Reset game immediately after saving
-  reset();
 }
 
 function reset(): void {
@@ -171,7 +171,8 @@ function reset(): void {
   otherVehicles = [];
   showResults(false);
   hidePlayerUI();
-  clearPlayerNameInput();
+  hideSignInContainer();
+  hideUserInfo();
   hideGameResult();
   lastTimestamp = undefined;
   // Place the player's car to the starting position
@@ -342,8 +343,28 @@ setupUIHandlers({
   onRightKey: () => {
     if (!paused && !gameOver && !gameOverPending) playerLane = 'inner';
   },
-  onNameSubmit: handlePlayerNameSubmit,
   onRetryClick: reset,
+  onSignIn: async () => {
+    try {
+      const googleName = await signInWithGoogle();
+      if (googleName) {
+        // Auto-save the Google name and show user info
+        const playerData = setPlayerName(googleName);
+        showUserInfo(googleName);
+
+        // Save score with the new name
+        saveLeaderboardScore({
+          id: playerData.id,
+          name: playerData.name,
+          score: score,
+        }).catch(error => {
+          console.error('Failed to save leaderboard score:', error);
+        });
+      }
+    } catch (error) {
+      console.error('Sign-in failed:', error);
+    }
+  },
 });
 
 // Initialize audio

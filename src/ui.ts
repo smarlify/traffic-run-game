@@ -4,15 +4,16 @@ const buttonsElement = document.getElementById('buttons');
 const instructionsElement = document.getElementById('instructions');
 const resultsElement = document.getElementById('results');
 const pauseDialogElement = document.getElementById('pause-dialog');
-const playerGreetingElement = document.getElementById('player-greeting');
-const playerNameFormElement = document.getElementById('player-name-form');
-const playerNameInputElement = document.getElementById('player-name-input') as HTMLInputElement;
-const playerNameSubmitElement = document.getElementById('player-name-submit');
 const resetInstructionElement = document.getElementById('reset-instruction');
 const finalScoreElement = document.getElementById('final-score');
 const retryButtonElement = document.getElementById('retry-button');
 const gameResultInfoElement = document.getElementById('game-result-info');
 const playerNameDisplayElement = document.getElementById('player-name-display');
+const signInContainerElement = document.getElementById('sign-in-container');
+const signInButtonElement = document.getElementById('sign-in-button');
+const signInPromptElement = document.getElementById('sign-in-prompt');
+const userInfoDisplayElement = document.getElementById('user-info-display');
+const signedInNameElement = document.getElementById('signed-in-name');
 
 // Create arrow buttons
 const upButton = document.createElement('button');
@@ -73,7 +74,6 @@ let onAccelerate = null;
 let onDecelerate = null;
 let onReset = null;
 let onStart = null;
-let onPlayerNameSubmit = null;
 let onRetry = null;
 
 function setScore(value) {
@@ -108,37 +108,41 @@ function showPauseDialog() {
 function hidePauseDialog() {
   if (pauseDialogElement) pauseDialogElement.style.display = 'none';
 }
-function showPlayerNamePrompt() {
-  if (playerNameFormElement) playerNameFormElement.style.display = 'block';
-  if (retryButtonElement) retryButtonElement.style.display = 'none';
-  if (resetInstructionElement) resetInstructionElement.style.display = 'none';
-  hideGameResult();
-  // Focus input after a short delay to ensure it's visible
-  setTimeout(() => {
-    if (playerNameInputElement) playerNameInputElement.focus();
-  }, 100);
-}
 function showPlayerGreeting(name: string, score: number) {
-  if (playerGreetingElement) {
-    playerGreetingElement.style.display = 'block';
-  }
-  if (playerNameFormElement) playerNameFormElement.style.display = 'none';
-  if (retryButtonElement) retryButtonElement.style.display = 'block';
-  if (resetInstructionElement) resetInstructionElement.style.display = 'block';
   showGameResult(name, score);
-}
-function hidePlayerUI() {
-  if (playerGreetingElement) playerGreetingElement.style.display = 'none';
-  if (playerNameFormElement) playerNameFormElement.style.display = 'none';
   if (retryButtonElement) retryButtonElement.style.display = 'block';
-  if (resetInstructionElement) resetInstructionElement.style.display = 'block';
+}
+
+function hidePlayerUI() {
+  if (retryButtonElement) retryButtonElement.style.display = 'block';
   hideGameResult();
 }
 
-function clearPlayerNameInput() {
-  if (playerNameInputElement) {
-    playerNameInputElement.value = '';
-  }
+function showSignInContainer() {
+  if (signInContainerElement) signInContainerElement.style.display = 'block';
+}
+
+function hideSignInContainer() {
+  if (signInContainerElement) signInContainerElement.style.display = 'none';
+}
+
+function showUserInfo(userName: string) {
+  // Hide the sign-in button and prompt
+  if (signInButtonElement) signInButtonElement.style.display = 'none';
+  if (signInPromptElement) signInPromptElement.style.display = 'none';
+
+  // Show the user info display
+  if (userInfoDisplayElement) userInfoDisplayElement.style.display = 'block';
+  if (signedInNameElement) signedInNameElement.innerText = userName;
+}
+
+function hideUserInfo() {
+  // Show the sign-in button and prompt
+  if (signInButtonElement) signInButtonElement.style.display = 'block';
+  if (signInPromptElement) signInPromptElement.style.display = 'block';
+
+  // Hide the user info display
+  if (userInfoDisplayElement) userInfoDisplayElement.style.display = 'none';
 }
 function setupUIHandlers({
   onAccelerateDown,
@@ -147,14 +151,13 @@ function setupUIHandlers({
   onStartKey,
   onLeftKey,
   onRightKey,
-  onNameSubmit,
   onRetryClick,
+  onSignIn,
 }) {
   onAccelerate = onAccelerateDown;
   onDecelerate = onDecelerateDown;
   onReset = onResetKey;
   onStart = onStartKey;
-  onPlayerNameSubmit = onNameSubmit;
   onRetry = onRetryClick;
   if (upButton) {
     upButton.addEventListener('mousedown', () => {
@@ -229,22 +232,6 @@ function setupUIHandlers({
     }
   });
 
-  // Player name form handlers
-  if (playerNameSubmitElement) {
-    playerNameSubmitElement.addEventListener('click', () => {
-      if (playerNameInputElement && playerNameInputElement.value.trim()) {
-        if (onPlayerNameSubmit) onPlayerNameSubmit(playerNameInputElement.value.trim());
-      }
-    });
-  }
-  if (playerNameInputElement) {
-    playerNameInputElement.addEventListener('keydown', event => {
-      if (event.key === 'Enter' && playerNameInputElement.value.trim()) {
-        if (onPlayerNameSubmit) onPlayerNameSubmit(playerNameInputElement.value.trim());
-      }
-    });
-  }
-
   // Retry button handler
   if (retryButtonElement) {
     retryButtonElement.addEventListener('click', () => {
@@ -266,6 +253,13 @@ function setupUIHandlers({
       retryButtonElement.style.boxShadow = 'none';
     });
   }
+
+  // Sign-in button handler
+  if (signInButtonElement && onSignIn) {
+    signInButtonElement.addEventListener('click', () => {
+      onSignIn();
+    });
+  }
 }
 
 export {
@@ -281,10 +275,12 @@ export {
   resultsElement,
   showPauseDialog,
   hidePauseDialog,
-  showPlayerNamePrompt,
   showPlayerGreeting,
   hidePlayerUI,
-  clearPlayerNameInput,
   showGameResult,
   hideGameResult,
+  showSignInContainer,
+  hideSignInContainer,
+  showUserInfo,
+  hideUserInfo,
 };
