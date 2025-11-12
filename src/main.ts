@@ -43,7 +43,6 @@ import {
   showUserInfo,
   hideUserInfo,
 } from './ui';
-import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
@@ -113,29 +112,12 @@ function resumeGame(): void {
 function handleGameOver(): void {
   gameOver = true;
 
-  // Check if player has a name stored
-  if (hasPlayerName()) {
-    // Player has a name stored, show greeting and save score
-    const playerData = getPlayerData();
-    if (playerData) {
-      saveLeaderboardScore({
-        id: playerData.id,
-        name: playerData.name,
-        score: score,
-      }).catch(error => {
-        console.error('Failed to save leaderboard score:', error);
-      });
-      showPlayerGreeting(playerData.name, score);
-      showUserInfo(playerData.name);
-    }
-  } else if (isUserLoggedIn()) {
-    // User is logged in with Google, auto-save their Google name
+  if (isUserLoggedIn()) {
+    // User is logged in with Google
     const googleName = getCurrentUserName();
     if (googleName) {
-      const playerData = setPlayerName(googleName);
       saveLeaderboardScore({
-        id: playerData.id,
-        name: playerData.name,
+        name: googleName,
         score: score,
       }).catch(error => {
         console.error('Failed to save leaderboard score:', error);
@@ -144,7 +126,7 @@ function handleGameOver(): void {
       showUserInfo(googleName);
     }
   } else {
-    // No name and not logged in - show sign-in prompt
+    // Not logged in - show sign-in prompt
     showGameResult('—', score);
     hidePlayerUI();
     showSignInContainer();
@@ -348,14 +330,11 @@ setupUIHandlers({
     try {
       const googleName = await signInWithGoogle();
       if (googleName) {
-        // Auto-save the Google name and show user info
-        const playerData = setPlayerName(googleName);
         showUserInfo(googleName);
 
         // Save score with the new name
         saveLeaderboardScore({
-          id: playerData.id,
-          name: playerData.name,
+          name: googleName,
           score: score,
         }).catch(error => {
           console.error('Failed to save leaderboard score:', error);
