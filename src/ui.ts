@@ -114,7 +114,7 @@ function showPlayerGreeting(name: string, score: number) {
 }
 
 function hidePlayerUI() {
-  if (retryButtonElement) retryButtonElement.style.display = 'block';
+  if (retryButtonElement) retryButtonElement.style.display = 'none';
   hideGameResult();
 }
 
