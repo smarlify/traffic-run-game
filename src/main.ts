@@ -331,6 +331,11 @@ setupUIHandlers({
       const googleName = await signInWithGoogle();
       if (googleName) {
         showUserInfo(googleName);
+        // Show retry button and hide sign-in container after successful login
+        if (gameOver) {
+          showPlayerGreeting(googleName, score);
+          hideSignInContainer();
+        }
 
         // Save score with the new name
         saveLeaderboardScore({
