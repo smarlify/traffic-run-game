@@ -19,7 +19,7 @@ a:visited {
   color: inherit;
 }
 
-#score {
+.game-ui__score {
   position: absolute;
   font-family: 'Press Start 2P', cursive;
   font-size: 0.9em;
@@ -31,20 +31,20 @@ a:visited {
   line-height: 1.6em;
 }
 
-#controls {
+.game-controls {
   position: absolute;
   bottom: 50px;
   left: 50px;
   display: none;
 }
 
-#controls #buttons {
+.game-controls__buttons {
   width: 80px;
   opacity: 0;
   transition: opacity 2s;
 }
 
-#controls #instructions {
+.game-controls__instructions {
   margin-left: 20px;
   max-width: 300px;
   background-color: rgba(0, 0, 0, 0.2);
@@ -53,7 +53,7 @@ a:visited {
   transition: opacity 2s;
 }
 
-#controls button {
+.game-controls__btn {
   width: 100%;
   height: 40px;
   background-color: white;
@@ -61,7 +61,7 @@ a:visited {
   margin-bottom: 10px;
 }
 
-#results {
+.game-modal {
   position: absolute;
   align-items: center;
   justify-content: center;
@@ -69,16 +69,56 @@ a:visited {
   width: 100%;
   background-color: rgba(20, 20, 20, 0.75);
   display: none;
+}
+
+.game-modal--results {
   z-index: 51;
 }
 
-#results .content {
+.game-modal--pause {
+  z-index: 52;
+}
+
+.game-modal__content {
   max-width: 500px;
   padding: 50px;
   border-radius: 20px;
 }
 
-#player-name-input {
+.score-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  padding: 40px 50px;
+  margin: 0 auto;
+  max-width: 450px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  text-align: center;
+}
+
+.score-card__title {
+  margin: 0 0 30px 0;
+  font-size: 2em;
+}
+
+.score-card__player {
+  margin: 20px 0;
+}
+
+.score-card__greeting {
+  font-size: 1.2em;
+  margin: 20px 0;
+  font-weight: bold;
+  display: none;
+}
+
+.score-card__form {
+  display: none;
+  text-align: center;
+}
+
+.score-card__input {
   padding: 12px 16px;
   font-size: 16px;
   border: 2px solid white;
@@ -93,115 +133,73 @@ a:visited {
   transition: background-color 0.3s;
 }
 
-#player-name-input:focus {
+.score-card__input:focus {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-#player-name-input::placeholder {
+.score-card__input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
-#player-name-form {
-  display: none;
-  text-align: center;
+.score-card__btn {
+  padding: 12px 32px;
+  font-size: 16px;
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 
-#player-name-submit {
+.score-card__btn:hover {
+  transform: scale(1.05);
+}
+
+.score-card__btn:active {
+  transform: scale(0.95);
+  box-shadow: 1px 2px 0px 0px rgba(0, 0, 0, 0.75);
+}
+
+.score-card__btn--submit {
   display: block;
   margin: 15px auto 0;
-  padding: 12px 32px;
-  font-size: 16px;
-  background-color: white;
-  color: black;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.1s, box-shadow 0.1s;
 }
 
-#player-name-submit:hover {
-  transform: scale(1.05);
-}
-
-#player-name-submit:active {
-  transform: scale(0.95);
-  box-shadow: 1px 2px 0px 0px rgba(0, 0, 0, 0.75);
-}
-
-#player-retry {
-  text-align: center;
-}
-
-#retry-button {
+.score-card__btn--retry {
   display: none;
   margin: 30px auto 0;
-  padding: 12px 32px;
-  font-size: 16px;
-  background-color: white;
-  color: black;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.1s, box-shadow 0.1s;
 }
 
-#retry-button:hover {
-  transform: scale(1.05);
-}
-
-#retry-button:active {
-  transform: scale(0.95);
-  box-shadow: 1px 2px 0px 0px rgba(0, 0, 0, 0.75);
-}
-
-#game-result-info {
+.score-card__info {
   margin: 30px 0;
   padding: 20px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-#player-info,
-#score-info {
+.score-card__row {
   font-size: 1.1em;
   margin: 10px 0;
   color: rgba(255, 255, 255, 0.9);
 }
 
-#player-name-display {
+.score-card__name {
   font-weight: bold;
   color: white;
 }
 
-#player-greeting {
-  font-size: 1.2em;
-  margin: 20px 0;
+.score-card__value {
   font-weight: bold;
+  color: white;
 }
 
-#player-name-container {
-  margin: 20px 0;
-}
-
-#score-frame {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 15px;
-  padding: 40px 50px;
-  margin: 0 auto;
-  max-width: 450px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+.score-card__actions {
   text-align: center;
 }
 
-#score-frame h1 {
-  margin: 0 0 30px 0;
-  font-size: 2em;
-}
-
+/* Score Label and Value (legacy classes for compatibility) */
 .score-label {
   font-size: 14px;
   text-transform: uppercase;
@@ -229,37 +227,13 @@ a:visited {
   text-transform: lowercase;
 }
 
-#score-frame #reset-instruction {
-  margin: 25px 0 0 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-#pause-dialog {
-  display: none;
-  position: absolute;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
-  background-color: rgba(20, 20, 20, 0.75);
-  z-index: 52;
-}
-
-#pause-dialog .content {
-  max-width: 500px;
-  padding: 50px;
-  border-radius: 20px;
-  text-align: center;
-}
-
 @media (min-height: 425px) {
-  #score {
+  .game-ui__score {
     font-size: 1.5em;
     max-width: 150px;
   }
 
-  #controls {
+  .game-controls {
     display: flex;
   }
 }
