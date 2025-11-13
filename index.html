@@ -34,17 +34,17 @@
 </head>
 <body>
 <script type="module" src="/src/main.js"></script>
-<div id="score" class="game-ui__score">Press UP</div>
-<div id="controls" class="game-controls">
-  <div id="buttons" class="game-controls__buttons">
-    <button id="accelerate" class="game-controls__btn game-controls__btn--accelerate">
+<div id="score">Press UP</div>
+<div id="controls">
+  <div id="buttons">
+    <button id="accelerate">
       <svg width="30" height="30" viewBox="0 0 10 10">
         <g transform="rotate(0, 5,5)">
           <path d="M5,4 L7,6 L3,6 L5,4" />
         </g>
       </svg>
     </button>
-    <button id="decelerate" class="game-controls__btn game-controls__btn--decelerate">
+    <button id="decelerate">
       <svg width="30" height="30" viewBox="0 0 10 10">
         <g transform="rotate(180, 5,5)">
           <path d="M5,4 L7,6 L3,6 L5,4" />
@@ -52,35 +52,19 @@
       </svg>
     </button>
   </div>
-  <div id="instructions" class="game-controls__instructions">
+  <div id="instructions">
     Press UP to start. Avoid collision with other vehicles by accelerating
     or decelerating with the UP and DOWN keys.
   </div>
 </div>
-<div id="results" class="game-modal game-modal--results">
-  <div class="game-modal__content">
-    <div id="score-frame" class="score-card">
-      <h1 class="score-card__title">Game Over</h1>
-      <div id="player-name-container" class="score-card__player">
-        <p id="player-greeting" class="score-card__greeting"></p>
-        <div id="player-name-form" class="score-card__form">
-          <p>Enter your name:</p>
-          <input type="text" id="player-name-input" class="score-card__input" maxlength="20" placeholder="Your name" />
-          <button id="player-name-submit" class="score-card__btn score-card__btn--submit">Save and Retry</button>
-        </div>
-      </div>
-      <div id="game-result-info" class="score-card__info">
-        <div id="player-info" class="score-card__row">Player: <span id="player-name-display" class="score-card__name">—</span></div>
-        <div id="score-info" class="score-card__row">Score: <span id="final-score" class="score-card__value">0</span></div>
-      </div>
-      <div id="player-retry" class="score-card__actions">
-        <button id="retry-button" class="score-card__btn score-card__btn--retry">Retry</button>
-      </div>
-    </div>
+<div id="results">
+  <div class="content">
+    <h1>You hit another vehicle</h1>
+    <p>To reset the game press R</p>
   </div>
 </div>
-<div id="pause-dialog" class="game-modal game-modal--pause">
-  <div class="game-modal__content">
+<div id="pause-dialog" style="display:none; position: absolute; align-items: center; justify-content: center; height: 100%; width: 100%; background-color: rgba(20, 20, 20, 0.75); z-index: 52;">
+  <div class="content" style="max-width: 500px; padding: 50px; border-radius: 20px; text-align: center;">
     <h1>Paused</h1>
     <p>Press SPACE to resume</p>
   </div>
