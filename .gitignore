@@ -27,3 +27,5 @@ dist-ssr
 .claude
 
 .env
+.env.local
+.env*

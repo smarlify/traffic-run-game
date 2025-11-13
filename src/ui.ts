@@ -94,7 +94,41 @@ function hideGameResult() {
   if (playerNameDisplayElement) playerNameDisplayElement.innerText = '—';
 }
 function showResults(show) {
-  if (resultsElement) resultsElement.style.display = show ? 'flex' : 'none';
+  if (resultsElement) {
+    resultsElement.style.display = show ? 'flex' : 'none';
+    
+    // Add click/tap event listener for mobile restart when showing results
+    if (show) {
+      const handleRestart = () => {
+        if (onReset) {
+          // Track restart event
+          if (typeof window !== 'undefined' && window.trackEvent) {
+            window.trackEvent('game_restart', {
+              game_id: 'traffic_run',
+              game_name: 'Traffic Run',
+              restart_method: 'tap',
+              event_category: 'game_interaction'
+            });
+          }
+          onReset();
+        }
+      };
+      
+      // Remove any existing listeners to prevent duplicates
+      resultsElement.removeEventListener('click', handleRestart);
+      resultsElement.removeEventListener('touchstart', handleRestart);
+      
+      // Add new listeners
+      resultsElement.addEventListener('click', handleRestart);
+      resultsElement.addEventListener('touchstart', handleRestart);
+      
+      // Make it clear it's clickable
+      resultsElement.style.cursor = 'pointer';
+    } else {
+      // Remove listeners when hiding results
+      resultsElement.style.cursor = 'default';
+    }
+  }
 }
 function setInstructionsOpacity(opacity) {
   if (instructionsElement) instructionsElement.style.opacity = opacity;
@@ -220,7 +254,18 @@ function setupUIHandlers({
       if (onRightKey) onRightKey();
     }
     if (event.key === 'R' || event.key === 'r') {
-      if (onReset) onReset();
+      if (onReset) {
+        // Track restart event
+        if (typeof window !== 'undefined' && window.trackEvent) {
+          window.trackEvent('game_restart', {
+            game_id: 'traffic_run',
+            game_name: 'Traffic Run',
+            restart_method: 'keyboard',
+            event_category: 'game_interaction'
+          });
+        }
+        onReset();
+      }
     }
   });
   window.addEventListener('keyup', event => {

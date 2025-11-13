@@ -1,26 +1,29 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Traffic Run</title>
-  <link rel="stylesheet" href="/src/style.css" />
-  <script defer src="https://cloud.umami.is/script.js" data-website-id="83e255ad-387c-4a7d-90af-8b5787fc38bb"></script>
+ <meta charset="UTF-8" />
+ <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>Traffic Run</title>
+ <link rel="stylesheet" href="/src/style.css" />
+ <script defer src="https://cloud.umami.is/script.js" data-website-id="83e255ad-387c-4a7d-90af-8b5787fc38bb"></script>
+ <!-- Google Analytics -->
+ <script async src="https://www.googletagmanager.com/gtag/js?id=G-C4NNL9P9S8"></script>
 </head>
+
 <body>
 <script type="module" src="/src/main.js"></script>
-<div id="score">Press UP</div>
-<div id="controls">
-  <div id="buttons">
-    <button id="accelerate">
+<div id="score" class="game-ui__score">Press UP</div>
+<div id="controls" class="game-controls">
+  <div id="buttons" class="game-controls__buttons">
+    <button id="accelerate" class="game-controls__btn game-controls__btn--accelerate">
       <svg width="30" height="30" viewBox="0 0 10 10">
         <g transform="rotate(0, 5,5)">
           <path d="M5,4 L7,6 L3,6 L5,4" />
         </g>
       </svg>
     </button>
-    <button id="decelerate">
+    <button id="decelerate" class="game-controls__btn game-controls__btn--decelerate">
       <svg width="30" height="30" viewBox="0 0 10 10">
         <g transform="rotate(180, 5,5)">
           <path d="M5,4 L7,6 L3,6 L5,4" />
@@ -28,21 +31,20 @@
       </svg>
     </button>
   </div>
-  <div id="instructions">
+  <div id="instructions" class="game-controls__instructions">
     Press UP to start. Avoid collision with other vehicles by accelerating
     or decelerating with the UP and DOWN keys.
   </div>
 </div>
-<div id="results">
-  <div class="content">
-    <div id="score-frame">
-      <h1>Game Over</h1>
-      <div id="score-info" style="margin: 20px 0; font-size: 1.5em; font-weight: bold;">Score: <span id="final-score">0</span></div>
-      <div id="game-result-info">
-        <div id="player-info">Player: <span id="player-name-display">—</span></div>
+<div id="results" class="game-modal game-modal--results">
+  <div class="content game-modal__content">
+    <div id="score-frame" class="score-card">
+      <h1 class="score-card__title">Game Over</h1>
+      <div id="player-name-container" class="score-card__player">
+     <div id="player-info">Player: <span id="player-name-display">—</span></div>
       </div>
-      <div id="player-retry">
-        <button id="retry-button">Retry</button>
+      <div id="player-retry" class="score-card__actions">
+        <button id="retry-button" class="score-card__btn score-card__btn--retry">Retry</button>
       </div>
       <div id="sign-in-container">
         <p id="sign-in-prompt">Want to save your score? Sign in with Google!</p>
@@ -55,8 +57,8 @@
     </div>
   </div>
 </div>
-<div id="pause-dialog">
-  <div class="content">
+<div id="pause-dialog" class="game-modal game-modal--pause">
+  <div class="game-modal__content">
     <h1>Paused</h1>
     <p>Press SPACE to resume</p>
   </div>
