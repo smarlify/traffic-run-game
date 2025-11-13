@@ -1,73 +1,49 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Traffic Run</title>
-  <link rel="stylesheet" href="/src/style.css" />
-  <script defer src="https://cloud.umami.is/script.js" data-website-id="83e255ad-387c-4a7d-90af-8b5787fc38bb"></script>
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C4NNL9P9S8"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-C4NNL9P9S8');
-
-      // Test GA on page load
-      gtag('event', 'page_view', {
-        page_title: document.title,
-        page_location: window.location.href
-      });
-
-      // Global GA event tracking function
-      window.trackEvent = function(eventName, parameters = {}) {
-        if (typeof gtag !== 'undefined') {
-          gtag('event', eventName, parameters);
-          console.log('GA Event tracked:', eventName, parameters);
-        } else {
-          console.warn('gtag not available for event:', eventName);
-        }
-      };
-    </script>
-</head>
-<body>
-<script type="module" src="/src/main.js"></script>
-<div id="score">Press UP</div>
-<div id="controls">
-  <div id="buttons">
-    <button id="accelerate">
-      <svg width="30" height="30" viewBox="0 0 10 10">
-        <g transform="rotate(0, 5,5)">
-          <path d="M5,4 L7,6 L3,6 L5,4" />
-        </g>
-      </svg>
-    </button>
-    <button id="decelerate">
-      <svg width="30" height="30" viewBox="0 0 10 10">
-        <g transform="rotate(180, 5,5)">
-          <path d="M5,4 L7,6 L3,6 L5,4" />
-        </g>
-      </svg>
-    </button>
-  </div>
-  <div id="instructions">
-    Press UP to start. Avoid collision with other vehicles by accelerating
-    or decelerating with the UP and DOWN keys.
-  </div>
-</div>
-<div id="results">
-  <div class="content">
-    <h1>You hit another vehicle</h1>
-    <p>To reset the game press R</p>
-  </div>
-</div>
-<div id="pause-dialog" style="display:none; position: absolute; align-items: center; justify-content: center; height: 100%; width: 100%; background-color: rgba(20, 20, 20, 0.75); z-index: 52;">
-  <div class="content" style="max-width: 500px; padding: 50px; border-radius: 20px; text-align: center;">
-    <h1>Paused</h1>
-    <p>Press SPACE to resume</p>
-  </div>
-</div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Traffic Run</title>
+    <link rel="stylesheet" href="/src/style.css" />
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="83e255ad-387c-4a7d-90af-8b5787fc38bb"></script>
+  </head>
+  <body>
+    <script type="module" src="/src/main.js"></script>
+    <div id="score">Press UP</div>
+    <div id="controls">
+      <div id="buttons">
+        <button id="accelerate">
+          <svg width="30" height="30" viewBox="0 0 10 10">
+            <g transform="rotate(0, 5,5)">
+              <path d="M5,4 L7,6 L3,6 L5,4" />
+            </g>
+          </svg>
+        </button>
+        <button id="decelerate">
+          <svg width="30" height="30" viewBox="0 0 10 10">
+            <g transform="rotate(180, 5,5)">
+              <path d="M5,4 L7,6 L3,6 L5,4" />
+            </g>
+          </svg>
+        </button>
+      </div>
+      <div id="instructions">
+        Press UP to start. Avoid collision with other vehicles by accelerating
+        or decelerating with the UP and DOWN keys.
+      </div>
+    </div>
+    <div id="results">
+      <div class="content">
+        <h1>You hit another vehicle</h1>
+        <p>To reset the game press R</p>
+      </div>
+    </div>
+    <div id="pause-dialog" style="display:none; position: absolute; align-items: center; justify-content: center; height: 100%; width: 100%; background-color: rgba(20, 20, 20, 0.75); z-index: 52;">
+      <div class="content" style="max-width: 500px; padding: 50px; border-radius: 20px; text-align: center;">
+        <h1>Paused</h1>
+        <p>Press SPACE to resume</p>
+      </div>
+    </div>
+  </body>
 </html>
