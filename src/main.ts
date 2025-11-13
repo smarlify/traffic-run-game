@@ -152,20 +152,6 @@ function handlePlayerNameSubmit(name: string): void {
 }
 
 function reset(): void {
-  // Track restart
-  playCount++;
-  trackEvent('game_restart', {
-    game_id: 'traffic_run',
-    game_name: 'Traffic Run',
-    play_count: playCount,
-    restart_method: 'keyboard',
-    final_score: score,
-    total_laps: totalLaps,
-    total_accelerations: totalAccelerations,
-    total_decelerations: totalDecelerations,
-    event_category: 'game_interaction'
-  });
-  
   // Clear all active timeouts to prevent state inconsistencies
   clearAllTimeouts();
 
@@ -216,17 +202,6 @@ function reset(): void {
   ready = true;
   gameOver = false;
   gameOverPending = false;
-  
-  // Track game start
-  trackEvent('game_start', {
-    game_id: 'traffic_run',
-    game_name: 'Traffic Run',
-    event_category: 'game_interaction'
-  });
-  
-  // Keep buttons and instructions visible
-  setButtonsOpacity(1);
-  setInstructionsOpacity(1);
   // Resume background music after reset
   resumeBackgroundMusic();
 }
@@ -236,7 +211,7 @@ function startGame() {
     ready = false;
     setScore(0);
     setButtonsOpacity(1);
-    setInstructionsOpacity(0.7); // Keep instructions visible but dimmed
+    setInstructionsOpacity(0);
     setAnimationLoop(animation);
     gameOver = false;
     gameOverPending = false;
@@ -294,20 +269,7 @@ function animation(timestamp: number): void {
   const laps = Math.floor(Math.abs(playerAngleMoved) / (Math.PI * 2));
   if (laps !== score) {
     score = laps;
-    totalLaps = Math.max(totalLaps, score);
     setScore(score);
-    
-    // Track max level achievement
-    trackMaxLevel(score);
-    
-    // Track lap milestone
-    trackEvent('lap_completed', {
-      game_id: 'traffic_run',
-      game_name: 'Traffic Run',
-      lap_number: score,
-      total_laps: totalLaps,
-      event_category: 'game_interaction'
-    });
   }
   // Change: spawn a new car after every 3 laps (not 5)
   if (otherVehicles.length < (laps + 1) / 3)
@@ -336,20 +298,6 @@ function animation(timestamp: number): void {
   });
   if (hit) {
     gameOverPending = true;
-    
-    // Send game over message to parent iframe
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'GAME_OVER',
-        gameName: 'Traffic Run',
-        score: totalLaps, // Use total laps as the score for leaderboard
-        level: undefined,
-        finalScore: score,
-        totalAccelerations: totalAccelerations,
-        totalDecelerations: totalDecelerations
-      }, '*');
-    }
-    
     return;
   }
   renderer.render(scene, camera);
@@ -369,32 +317,10 @@ function positionScoreElement() {
 // UI event wiring
 setupUIHandlers({
   onAccelerateDown: val => {
-    if (!paused && !gameOver && !gameOverPending) {
-      accelerate = val;
-      if (val) {
-        totalAccelerations++;
-        trackEvent('accelerate_press', {
-          game_id: 'traffic_run',
-          game_name: 'Traffic Run',
-          total_accelerations: totalAccelerations,
-          event_category: 'game_interaction'
-        });
-      }
-    }
+    if (!paused && !gameOver && !gameOverPending) accelerate = val;
   },
   onDecelerateDown: val => {
-    if (!paused && !gameOver && !gameOverPending) {
-      decelerate = val;
-      if (val) {
-        totalDecelerations++;
-        trackEvent('decelerate_press', {
-          game_id: 'traffic_run',
-          game_name: 'Traffic Run',
-          total_decelerations: totalDecelerations,
-          event_category: 'game_interaction'
-        });
-      }
-    }
+    if (!paused && !gameOver && !gameOverPending) decelerate = val;
   },
   onResetKey: () => {
     // Only reset if not in game over state - must use Retry button during game over
