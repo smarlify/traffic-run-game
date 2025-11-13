@@ -27,13 +27,13 @@
     "type-check": "tsc --noEmit",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "test:e2e": "cypress run",
-    "test:e2e:dev": "cypress open"
+    "test:e2e": "npx cypress run"
   },
   "devDependencies": {
     "@types/three": "^0.178.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "cypress": "^15.6.0",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
