@@ -191,12 +191,32 @@ export function checkCollision({
       (window as any).addTimeout(() => {
         showResults(true);
         stopAnimationLoop();
+        
+        // Track game over
+        if (typeof window !== 'undefined' && window.trackEvent) {
+          window.trackEvent('game_over', {
+            game_id: 'traffic_run',
+            game_name: 'Traffic Run',
+            final_score: Math.floor(Math.abs(playerAngleMoved) / (Math.PI * 2)),
+            event_category: 'game_interaction'
+          });
+        }
       }, 1000); // Delay game over by 1s for animation
     } else {
       // Fallback to regular setTimeout
       setTimeout(() => {
         showResults(true);
         stopAnimationLoop();
+        
+        // Track game over
+        if (typeof window !== 'undefined' && window.trackEvent) {
+          window.trackEvent('game_over', {
+            game_id: 'traffic_run',
+            game_name: 'Traffic Run',
+            final_score: Math.floor(Math.abs(playerAngleMoved) / (Math.PI * 2)),
+            event_category: 'game_interaction'
+          });
+        }
       }, 1000);
     }
     return true;

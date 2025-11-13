@@ -20,6 +20,7 @@
     "build": "vite build",
     "start": "node server.js",
     "preview": "vite preview",
+    "test": "cypress run --headless",
     "lint": "eslint src --ext .ts,.js --fix",
     "lint:check": "eslint src --ext .ts,.js",
     "format": "prettier --write src/**/*.{ts,js,json,css,md}",
