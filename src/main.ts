@@ -27,19 +27,25 @@ import {
 } from './track';
 import {
   setScore,
+  setFinalScore,
   showResults,
   setInstructionsOpacity,
   setButtonsOpacity,
   setupUIHandlers,
   showPauseDialog,
   hidePauseDialog,
+  showPlayerNamePrompt,
+  showPlayerGreeting,
+  hidePlayerUI,
+  clearPlayerNameInput,
+  showGameResult,
+  hideGameResult,
 } from './ui';
+import { getPlayerData, setPlayerName, hasPlayerName } from './player';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
-import { GameState, VehicleType } from './types';
-import { trackGamePlayed, trackMaxLevel } from './analytics';
-import { initializeFirebaseAuth } from './firebase';
+import { saveLeaderboardScore } from './leaderboard';
 
 // Game state
 let playerCar: THREE.Group | null = null;
@@ -59,17 +65,7 @@ const playerAngleInitial: number = Math.PI;
 let paused: boolean = false;
 let gameOver: boolean = false;
 let gameOverPending: boolean = false;
-let playCount: number = 0;
-let totalLaps: number = 0;
-let totalAccelerations: number = 0;
-let totalDecelerations: number = 0;
-
-// GA tracking helper
-function trackEvent(eventName: string, parameters: Record<string, unknown> = {}) {
-  if (typeof window !== 'undefined' && window.trackEvent) {
-    window.trackEvent(eventName, parameters);
-  }
-}
+let firstGameOver: boolean = true;
 
 // Timeout management
 let activeTimeouts: number[] = [];
@@ -112,24 +108,53 @@ function resumeGame(): void {
   }
 }
 
-function reset(): void {
-  // Track restart
-  playCount++;
-  trackEvent('game_restart', {
-    game_id: 'traffic_run',
-    game_name: 'Traffic Run',
-    play_count: playCount,
-    restart_method: 'keyboard',
-    final_score: score,
-    total_laps: totalLaps,
-    total_accelerations: totalAccelerations,
-    total_decelerations: totalDecelerations,
-    event_category: 'game_interaction'
+function handleGameOver(): void {
+  gameOver = true;
+
+  // Check if player has a name stored
+  if (hasPlayerName()) {
+    // Only save score to leaderboard if player has a name
+    const playerData = getPlayerData();
+    if (playerData) {
+      saveLeaderboardScore({
+        id: playerData.id,
+        name: playerData.name,
+        score: score,
+      }).catch(error => {
+        console.error('Failed to save leaderboard score:', error);
+      });
+      showPlayerGreeting(playerData.name, score);
+    }
+  } else if (firstGameOver) {
+    // First game over and no name - show prompt and game result
+    showGameResult('—', score);
+    showPlayerNamePrompt();
+    firstGameOver = false;
+  } else {
+    // Subsequent game overs without name - show game result
+    showGameResult('—', score);
+    hidePlayerUI();
+  }
+}
+
+function handlePlayerNameSubmit(name: string): void {
+  const playerData = setPlayerName(name);
+  // Save score to leaderboard with the new name
+  saveLeaderboardScore({
+    id: playerData.id,
+    name: playerData.name,
+    score: score,
+  }).catch(error => {
+    console.error('Failed to save leaderboard score:', error);
   });
-  
+  // Reset game immediately after saving
+  reset();
+}
+
+function reset(): void {
   // Clear all active timeouts to prevent state inconsistencies
   clearAllTimeouts();
-  
+
   playerAngleMoved = 0;
   score = 0;
   setScore('Press UP');
@@ -145,6 +170,9 @@ function reset(): void {
   });
   otherVehicles = [];
   showResults(false);
+  hidePlayerUI();
+  clearPlayerNameInput();
+  hideGameResult();
   lastTimestamp = undefined;
   // Place the player's car to the starting position
   movePlayerCar(0);
@@ -174,17 +202,6 @@ function reset(): void {
   ready = true;
   gameOver = false;
   gameOverPending = false;
-  
-  // Track game start
-  trackEvent('game_start', {
-    game_id: 'traffic_run',
-    game_name: 'Traffic Run',
-    event_category: 'game_interaction'
-  });
-  
-  // Keep buttons and instructions visible
-  setButtonsOpacity(1);
-  setInstructionsOpacity(1);
   // Resume background music after reset
   resumeBackgroundMusic();
 }
@@ -194,7 +211,7 @@ function startGame() {
     ready = false;
     setScore(0);
     setButtonsOpacity(1);
-    setInstructionsOpacity(0.7); // Keep instructions visible but dimmed
+    setInstructionsOpacity(0);
     setAnimationLoop(animation);
     gameOver = false;
     gameOverPending = false;
@@ -252,20 +269,7 @@ function animation(timestamp: number): void {
   const laps = Math.floor(Math.abs(playerAngleMoved) / (Math.PI * 2));
   if (laps !== score) {
     score = laps;
-    totalLaps = Math.max(totalLaps, score);
     setScore(score);
-    
-    // Track max level achievement
-    trackMaxLevel(score);
-    
-    // Track lap milestone
-    trackEvent('lap_completed', {
-      game_id: 'traffic_run',
-      game_name: 'Traffic Run',
-      lap_number: score,
-      total_laps: totalLaps,
-      event_category: 'game_interaction'
-    });
   }
   // Change: spawn a new car after every 3 laps (not 5)
   if (otherVehicles.length < (laps + 1) / 3)
@@ -283,26 +287,17 @@ function animation(timestamp: number): void {
     playerAngleInitial,
     playerAngleMoved,
     otherVehicles,
-    showResults,
+    showResults: (show) => {
+      showResults(show);
+      if (show) {
+        handleGameOver();
+      }
+    },
     stopAnimationLoop,
     scene, // Pass scene for explosions
   });
   if (hit) {
     gameOverPending = true;
-    
-    // Send game over message to parent iframe
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'GAME_OVER',
-        gameName: 'Traffic Run',
-        score: totalLaps, // Use total laps as the score for leaderboard
-        level: undefined,
-        finalScore: score,
-        totalAccelerations: totalAccelerations,
-        totalDecelerations: totalDecelerations
-      }, '*');
-    }
-    
     return;
   }
   renderer.render(scene, camera);
@@ -322,42 +317,24 @@ function positionScoreElement() {
 // UI event wiring
 setupUIHandlers({
   onAccelerateDown: val => {
-    if (!paused && !gameOver && !gameOverPending) {
-      accelerate = val;
-      if (val) {
-        totalAccelerations++;
-        trackEvent('accelerate_press', {
-          game_id: 'traffic_run',
-          game_name: 'Traffic Run',
-          total_accelerations: totalAccelerations,
-          event_category: 'game_interaction'
-        });
-      }
-    }
+    if (!paused && !gameOver && !gameOverPending) accelerate = val;
   },
   onDecelerateDown: val => {
-    if (!paused && !gameOver && !gameOverPending) {
-      decelerate = val;
-      if (val) {
-        totalDecelerations++;
-        trackEvent('decelerate_press', {
-          game_id: 'traffic_run',
-          game_name: 'Traffic Run',
-          total_decelerations: totalDecelerations,
-          event_category: 'game_interaction'
-        });
-      }
+    if (!paused && !gameOver && !gameOverPending) decelerate = val;
+  },
+  onResetKey: () => {
+    // Only reset if not in game over state - must use Retry button during game over
+    if (!gameOver && !gameOverPending) {
+      reset();
     }
   },
-  onResetKey: reset,
   onStartKey: () => {
-    if (gameOver || gameOverPending) {
-      reset();
-    } else if (paused) {
+    if (paused) {
       resumeGame();
-    } else {
+    } else if (!gameOver && !gameOverPending) {
       startGame();
     }
+    // When gameOver, arrow key does nothing - must use Retry button
   },
   onLeftKey: () => {
     if (!paused && !gameOver && !gameOverPending) playerLane = 'outer';
@@ -365,6 +342,8 @@ setupUIHandlers({
   onRightKey: () => {
     if (!paused && !gameOver && !gameOverPending) playerLane = 'inner';
   },
+  onNameSubmit: handlePlayerNameSubmit,
+  onRetryClick: reset,
 });
 
 // Initialize audio
@@ -398,14 +377,8 @@ window.addEventListener('visibilitychange', () => {
 
 // Game initialization
 async function init() {
-  // Initialize Firebase auth (creates anonymous user if needed)
-  await initializeFirebaseAuth();
-  
-  // Track game played on load
-  await trackGamePlayed();
-  
-  // Always use pink for the player car
-  playerCarColor = 0xef2d56; // Pink color
+  // Pick a random color for the player
+  playerCarColor = pickRandom(vehicleColors);
   playerCar = Car([playerCarColor]);
   scene.add(playerCar);
   renderMap(
@@ -424,9 +397,8 @@ init();
 window.addEventListener('keydown', event => {
   if (event.key === ' ') {
     event.preventDefault();
-    if (gameOver) {
-      // During game over, space key should restart the game
-      reset();
+    // Game over: don't respond to any keys, only button clicks
+    if (gameOver || gameOverPending) {
       return;
     }
     if (paused) {
@@ -435,6 +407,9 @@ window.addEventListener('keydown', event => {
       pauseGame();
     }
   }
-  if (event.key === 'ArrowLeft') switchLane('left');
-  if (event.key === 'ArrowRight') switchLane('right');
+  // Arrow keys disabled during game over
+  if (!gameOver && !gameOverPending) {
+    if (event.key === 'ArrowLeft') switchLane('left');
+    if (event.key === 'ArrowRight') switchLane('right');
+  }
 });

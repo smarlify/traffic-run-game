@@ -4,6 +4,15 @@ const buttonsElement = document.getElementById('buttons');
 const instructionsElement = document.getElementById('instructions');
 const resultsElement = document.getElementById('results');
 const pauseDialogElement = document.getElementById('pause-dialog');
+const playerGreetingElement = document.getElementById('player-greeting');
+const playerNameFormElement = document.getElementById('player-name-form');
+const playerNameInputElement = document.getElementById('player-name-input') as HTMLInputElement;
+const playerNameSubmitElement = document.getElementById('player-name-submit');
+const resetInstructionElement = document.getElementById('reset-instruction');
+const finalScoreElement = document.getElementById('final-score');
+const retryButtonElement = document.getElementById('retry-button');
+const gameResultInfoElement = document.getElementById('game-result-info');
+const playerNameDisplayElement = document.getElementById('player-name-display');
 
 // Create arrow buttons
 const upButton = document.createElement('button');
@@ -64,9 +73,25 @@ let onAccelerate = null;
 let onDecelerate = null;
 let onReset = null;
 let onStart = null;
+let onPlayerNameSubmit = null;
+let onRetry = null;
 
 function setScore(value) {
   if (scoreElement) scoreElement.innerText = value;
+}
+function setFinalScore(value: number) {
+  if (finalScoreElement) finalScoreElement.innerText = value.toString();
+}
+
+function showGameResult(playerName: string, score: number) {
+  if (playerNameDisplayElement) playerNameDisplayElement.innerText = playerName;
+  if (finalScoreElement) finalScoreElement.innerText = score.toString();
+  if (gameResultInfoElement) gameResultInfoElement.style.display = 'block';
+}
+
+function hideGameResult() {
+  if (gameResultInfoElement) gameResultInfoElement.style.display = 'none';
+  if (playerNameDisplayElement) playerNameDisplayElement.innerText = '—';
 }
 function showResults(show) {
   if (resultsElement) {
@@ -117,6 +142,38 @@ function showPauseDialog() {
 function hidePauseDialog() {
   if (pauseDialogElement) pauseDialogElement.style.display = 'none';
 }
+function showPlayerNamePrompt() {
+  if (playerNameFormElement) playerNameFormElement.style.display = 'block';
+  if (retryButtonElement) retryButtonElement.style.display = 'none';
+  if (resetInstructionElement) resetInstructionElement.style.display = 'none';
+  hideGameResult();
+  // Focus input after a short delay to ensure it's visible
+  setTimeout(() => {
+    if (playerNameInputElement) playerNameInputElement.focus();
+  }, 100);
+}
+function showPlayerGreeting(name: string, score: number) {
+  if (playerGreetingElement) {
+    playerGreetingElement.style.display = 'block';
+  }
+  if (playerNameFormElement) playerNameFormElement.style.display = 'none';
+  if (retryButtonElement) retryButtonElement.style.display = 'block';
+  if (resetInstructionElement) resetInstructionElement.style.display = 'block';
+  showGameResult(name, score);
+}
+function hidePlayerUI() {
+  if (playerGreetingElement) playerGreetingElement.style.display = 'none';
+  if (playerNameFormElement) playerNameFormElement.style.display = 'none';
+  if (retryButtonElement) retryButtonElement.style.display = 'block';
+  if (resetInstructionElement) resetInstructionElement.style.display = 'block';
+  hideGameResult();
+}
+
+function clearPlayerNameInput() {
+  if (playerNameInputElement) {
+    playerNameInputElement.value = '';
+  }
+}
 function setupUIHandlers({
   onAccelerateDown,
   onDecelerateDown,
@@ -124,11 +181,15 @@ function setupUIHandlers({
   onStartKey,
   onLeftKey,
   onRightKey,
+  onNameSubmit,
+  onRetryClick,
 }) {
   onAccelerate = onAccelerateDown;
   onDecelerate = onDecelerateDown;
   onReset = onResetKey;
   onStart = onStartKey;
+  onPlayerNameSubmit = onNameSubmit;
+  onRetry = onRetryClick;
   if (upButton) {
     upButton.addEventListener('mousedown', () => {
       if (onStart) onStart();
@@ -212,10 +273,49 @@ function setupUIHandlers({
       if (onDecelerate) onDecelerate(false);
     }
   });
+
+  // Player name form handlers
+  if (playerNameSubmitElement) {
+    playerNameSubmitElement.addEventListener('click', () => {
+      if (playerNameInputElement && playerNameInputElement.value.trim()) {
+        if (onPlayerNameSubmit) onPlayerNameSubmit(playerNameInputElement.value.trim());
+      }
+    });
+  }
+  if (playerNameInputElement) {
+    playerNameInputElement.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && playerNameInputElement.value.trim()) {
+        if (onPlayerNameSubmit) onPlayerNameSubmit(playerNameInputElement.value.trim());
+      }
+    });
+  }
+
+  // Retry button handler
+  if (retryButtonElement) {
+    retryButtonElement.addEventListener('click', () => {
+      if (onRetry) onRetry();
+    });
+    // Add hover effects for retry button
+    retryButtonElement.addEventListener('mouseenter', () => {
+      retryButtonElement.style.transform = 'scale(1.05)';
+    });
+    retryButtonElement.addEventListener('mouseleave', () => {
+      retryButtonElement.style.transform = 'scale(1)';
+    });
+    retryButtonElement.addEventListener('mousedown', () => {
+      retryButtonElement.style.transform = 'scale(0.95)';
+      retryButtonElement.style.boxShadow = '1px 2px 0px 0px rgba(0, 0, 0, 0.75)';
+    });
+    retryButtonElement.addEventListener('mouseup', () => {
+      retryButtonElement.style.transform = 'scale(1.05)';
+      retryButtonElement.style.boxShadow = 'none';
+    });
+  }
 }
 
 export {
   setScore,
+  setFinalScore,
   showResults,
   setInstructionsOpacity,
   setButtonsOpacity,
@@ -226,4 +326,10 @@ export {
   resultsElement,
   showPauseDialog,
   hidePauseDialog,
+  showPlayerNamePrompt,
+  showPlayerGreeting,
+  hidePlayerUI,
+  clearPlayerNameInput,
+  showGameResult,
+  hideGameResult,
 };
