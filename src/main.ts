@@ -33,11 +33,19 @@ import {
   setupUIHandlers,
   showPauseDialog,
   hidePauseDialog,
+  showPlayerGreeting,
+  hidePlayerUI,
+  showGameResult,
+  hideGameResult,
+  showSignInContainer,
+  hideSignInContainer,
+  showUserInfo,
+  hideUserInfo,
 } from './ui';
 import { initAudio, playBackgroundMusic, stopBackgroundMusic, pauseBackgroundMusic, resumeBackgroundMusic } from './audio';
 import { checkCollision } from './collision';
 import { vehicleColors } from './vehicles';
-import { GameState, VehicleType } from './types';
+import { saveLeaderboardScore } from './leaderboard';
 
 // Game state
 let playerCar: THREE.Group | null = null;
@@ -99,6 +107,47 @@ function resumeGame(): void {
   }
 }
 
+function handleGameOver(): void {
+  gameOver = true;
+
+  // Check if player has a name stored
+  if (hasPlayerName()) {
+    // Player has a name stored, show greeting and save score
+    const playerData = getPlayerData();
+    if (playerData) {
+      saveLeaderboardScore({
+        id: playerData.id,
+        name: playerData.name,
+        score: score,
+      }).catch(error => {
+        console.error('Failed to save leaderboard score:', error);
+      });
+      showPlayerGreeting(playerData.name, score);
+      showUserInfo(playerData.name);
+    }
+  } else if (isUserLoggedIn()) {
+    // User is logged in with Google, auto-save their Google name
+    const googleName = getCurrentUserName();
+    if (googleName) {
+      const playerData = setPlayerName(googleName);
+      saveLeaderboardScore({
+        id: playerData.id,
+        name: playerData.name,
+        score: score,
+      }).catch(error => {
+        console.error('Failed to save leaderboard score:', error);
+      });
+      showPlayerGreeting(googleName, score);
+      showUserInfo(googleName);
+    }
+  } else {
+    // No name and not logged in - show sign-in prompt
+    showGameResult('—', score);
+    hidePlayerUI();
+    showSignInContainer();
+  }
+}
+
 function reset(): void {
   // Clear all active timeouts to prevent state inconsistencies
   clearAllTimeouts();
@@ -118,6 +167,10 @@ function reset(): void {
   });
   otherVehicles = [];
   showResults(false);
+  hidePlayerUI();
+  hideSignInContainer();
+  hideUserInfo();
+  hideGameResult();
   lastTimestamp = undefined;
   // Place the player's car to the starting position
   movePlayerCar(0);
@@ -277,6 +330,28 @@ setupUIHandlers({
   },
   onRightKey: () => {
     if (!paused && !gameOver && !gameOverPending) playerLane = 'inner';
+  },
+  onRetryClick: reset,
+  onSignIn: async () => {
+    try {
+      const googleName = await signInWithGoogle();
+      if (googleName) {
+        // Auto-save the Google name and show user info
+        const playerData = setPlayerName(googleName);
+        showUserInfo(googleName);
+
+        // Save score with the new name
+        saveLeaderboardScore({
+          id: playerData.id,
+          name: playerData.name,
+          score: score,
+        }).catch(error => {
+          console.error('Failed to save leaderboard score:', error);
+        });
+      }
+    } catch (error) {
+      console.error('Sign-in failed:', error);
+    }
   },
 });
 
